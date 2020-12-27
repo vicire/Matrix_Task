@@ -28,7 +28,7 @@ class WordInMatrixTest {
     public void checkForAppropriateMatrixLength() {
         String word = "CAR";
         assertThrows(RuntimeException.class, () -> wordInMatrix.getCells("AR", word));
-        assertThrows(RuntimeException.class, () -> wordInMatrix.getCells("ARTC", word));
+        assertThrows(RuntimeException.class, () -> wordInMatrix.getCells("ARTCT", word));
         assertThrows(RuntimeException.class, () ->
                 wordInMatrix.getCells("HKFDVLDTGDGNMCABXQZRH", word));
     }

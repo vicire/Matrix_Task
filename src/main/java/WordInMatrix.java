@@ -1,85 +1,100 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class WordInMatrix {
     public String getCells(String matrix, String word) {
         checkingForErrors(matrix, word);
         matrix = matrix.toUpperCase();
         word = word.toUpperCase();
-        for (int i = 0; i < matrix.length(); i++) {
+        if (word.length() == 1 && matrix.contains(word)) {
+            return addToCellsSequence(matrix.indexOf(word), (int) Math.sqrt(matrix.length()))
+                    .replace("->", "");
+        }
+        for (int i = 0; i < matrix.length() && word.length() > 1; i++) {
             int letterPosition = matrix.indexOf(word.charAt(0), i);
             if (letterPosition == -1) {
                 throw new RuntimeException("Your request is not acceptable, try to change word");
             }
+            List<String> cellsSequence = new ArrayList<>();
+            int row = (int) Math.sqrt(matrix.length());
             String backup = matrix;
             matrix = markMyWay(matrix, letterPosition, word.charAt(0));
-            String cellsSequence = "";
-            int row = (int) Math.sqrt(matrix.length());
-            String checkAndAddCells = checkSells(matrix, word.substring(1),
+            cellsSequence = checkSells(matrix, word.substring(1),
                     letterPosition, row, cellsSequence);
-            if (!(checkAndAddCells.equals("Wrong word"))) {
-                StringBuilder firstLetterCell = new StringBuilder("[");
-                firstLetterCell.append(letterPosition / row)
-                        .append(",")
-                        .append(letterPosition % row)
-                        .append("]")
-                        .append(checkAndAddCells);
-                return firstLetterCell.toString();
+            if (!(cellsSequence.get(cellsSequence.size() - 1).equals("Wrong word"))) {
+                StringBuilder letterCells = new StringBuilder();
+                letterCells.append(addToCellsSequence(letterPosition, row));
+                for (String cell : cellsSequence) {
+                    letterCells.append(cell);
+                }
+                return letterCells.toString().replaceFirst("->", "");
             }
             matrix = backup;
         }
         throw new RuntimeException("Your request is not acceptable. Please, try to change word");
     }
 
-    private String checkSells(String matrix, String word,
-                              int letterPosition, int row, String cellsSequence) {
+    private List<String> checkSells(String matrix, String word,
+                              int letterPosition, int row, List<String> cellsSequence) {
         if (word.length() == 0) {
             return cellsSequence;
         }
         if (letterPosition >= row && word.charAt(0) == matrix.charAt(letterPosition - row)) {
             letterPosition = letterPosition - row;
-            String oneCell = cellsSequence;
-            oneCell = addToCellsSequence(oneCell, letterPosition, row);
+            cellsSequence.add(addToCellsSequence(letterPosition, row));
             matrix = markMyWay(matrix, letterPosition, word.charAt(0));
-            oneCell = checkSells(matrix,word.substring(1), letterPosition, row, oneCell);
-            if (oneCell.equals("Wrong word")) {
+            cellsSequence = checkSells(matrix, word.substring(1),
+                    letterPosition, row, cellsSequence);
+            if (cellsSequence.get(cellsSequence.size() - 1).equals("Wrong word")) {
+                cellsSequence.remove("Wrong word");
+                cellsSequence.remove(cellsSequence.size() - 1);
                 letterPosition += row;
             } else {
-                return oneCell;
+                return cellsSequence;
             }
         }
         if (letterPosition + row < matrix.length()
                 && word.charAt(0) == matrix.charAt(letterPosition + row)) {
             letterPosition = letterPosition + row;
-            String oneCell = cellsSequence;
-            oneCell = addToCellsSequence(oneCell, letterPosition, row);
+            cellsSequence.add(addToCellsSequence(letterPosition, row));
             matrix = markMyWay(matrix, letterPosition, word.charAt(0));
-            oneCell = checkSells(matrix,word.substring(1), letterPosition, row, oneCell);
-            if ((oneCell.equals("Wrong word"))) {
+            cellsSequence = checkSells(matrix, word.substring(1),
+                    letterPosition, row, cellsSequence);
+            if ((cellsSequence.get(cellsSequence.size() - 1).equals("Wrong word"))) {
+                cellsSequence.remove("Wrong word");
+                cellsSequence.remove(cellsSequence.size() - 1);
                 letterPosition -= row;
             } else {
-                return oneCell;
+                return cellsSequence;
             }
+
         }
         if (letterPosition % row != 0 && word.charAt(0) == matrix.charAt(letterPosition - 1)) {
             letterPosition = letterPosition - 1;
-            String oneCell = cellsSequence;
-            oneCell = addToCellsSequence(oneCell, letterPosition, row);
+            cellsSequence.add(addToCellsSequence(letterPosition, row));
             matrix = markMyWay(matrix, letterPosition, word.charAt(0));
-            oneCell = checkSells(matrix,word.substring(1), letterPosition, row, oneCell);
-            if (oneCell.equals("Wrong word")) {
+            cellsSequence = checkSells(matrix, word.substring(1),
+                    letterPosition, row, cellsSequence);
+            if (cellsSequence.get(cellsSequence.size() - 1).equals("Wrong word")) {
+                cellsSequence.remove("Wrong word");
+                cellsSequence.remove(cellsSequence.size() - 1);
                 letterPosition += 1;
             } else {
-                return oneCell;
+                return cellsSequence;
             }
+
         }
         if (letterPosition % row != row - 1
                 && word.charAt(0) == matrix.charAt(letterPosition + 1)) {
             letterPosition = letterPosition + 1;
-            String oneCell = cellsSequence;
-            oneCell = addToCellsSequence(oneCell, letterPosition, row);
+            cellsSequence.add(addToCellsSequence(letterPosition, row));
             matrix = markMyWay(matrix, letterPosition, word.charAt(0));
-            oneCell = checkSells(matrix,word.substring(1), letterPosition, row, oneCell);
-            return oneCell;
+            cellsSequence = checkSells(matrix, word.substring(1),
+                    letterPosition, row, cellsSequence);
+            return cellsSequence;
         }
-        return "Wrong word";
+        cellsSequence.add("Wrong word");
+        return cellsSequence;
     }
 
     private String markMyWay(String matrix, int letterPosition, char letterToChange) {
@@ -88,8 +103,8 @@ public class WordInMatrix {
         return changeString.toString();
     }
 
-    private String addToCellsSequence(String cellsSequence, int letterPosition, int row) {
-        StringBuilder singleCell = new StringBuilder(cellsSequence);
+    private String addToCellsSequence(int letterPosition, int row) {
+        StringBuilder singleCell = new StringBuilder();
         singleCell.append("->[")
                 .append(letterPosition / row)
                 .append(",")
